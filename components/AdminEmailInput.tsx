@@ -15,24 +15,26 @@ export default function AdminEmailInput({ value, onChange }: Props) {
   }, [value]);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded border p-3">
-      <label htmlFor="admin-email" className="text-sm font-medium">
+    <div className="panel p-3 md:p-4">
+      <label htmlFor="admin-email" className="field-label block">
         Dev admin email
       </label>
-      <input
-        id="admin-email"
-        className="min-w-72 rounded border px-2 py-1"
-        value={draft}
-        onChange={(event) => setDraft(event.target.value)}
-        placeholder="admin@example.com"
-      />
-      <button
-        type="button"
-        className="rounded bg-black px-3 py-1 text-white"
-        onClick={() => onChange(draft.trim().toLowerCase())}
-      >
-        Save
-      </button>
+      <div className="flex flex-col gap-2 md:flex-row">
+        <input
+          id="admin-email"
+          className="md:flex-1"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder="admin@example.com"
+        />
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => onChange(draft.trim().toLowerCase())}
+        >
+          Save
+        </button>
+      </div>
     </div>
   );
 }

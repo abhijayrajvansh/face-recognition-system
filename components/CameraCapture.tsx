@@ -65,13 +65,13 @@ export default function CameraCapture({ onCapture, disabled }: Props) {
   };
 
   return (
-    <div className="space-y-2">
-      <video ref={videoRef} className="w-full max-w-xl rounded border bg-black" muted playsInline />
+    <div className="space-y-3">
+      <video ref={videoRef} className="w-full rounded-xl border border-slate-300 bg-black object-cover" muted playsInline />
       <button
         type="button"
         onClick={capture}
         disabled={disabled}
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+        className="btn-primary w-full disabled:opacity-50 md:w-auto"
       >
         Capture & Submit
       </button>
