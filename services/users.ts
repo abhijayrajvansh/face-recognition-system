@@ -90,16 +90,23 @@ export const getUserById = async (id: string) => {
 };
 
 export const getUserBySubject = async (subject: string) => {
+  const normalized = toSubjectFromCode(subject);
+
   if (env.useMockDb) {
-    return mockDb.findUserBySubject(subject);
+    return mockDb.findUserBySubject(normalized) ?? mockDb.findUserBySubject(subject);
   }
 
-  const snapshot = await usersCollection().where("comprefaceSubject", "==", subject).limit(1).get();
-  if (snapshot.empty) {
-    return null;
+  const lookups = normalized === subject ? [subject] : [normalized, subject];
+
+  for (const key of lookups) {
+    const snapshot = await usersCollection().where("comprefaceSubject", "==", key).limit(1).get();
+    if (!snapshot.empty) {
+      const doc = snapshot.docs[0];
+      return { id: doc.id, ...(doc.data() as UserDoc) };
+    }
   }
-  const doc = snapshot.docs[0];
-  return { id: doc.id, ...(doc.data() as UserDoc) };
+
+  return null;
 };
 
 export const updateUser = async (
