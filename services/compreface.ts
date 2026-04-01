@@ -60,8 +60,21 @@ export const createOrEnsureSubject = async (subject: string): Promise<void> => {
     body: JSON.stringify({ subject }),
   });
 
-  if (!response.ok && response.status !== 409) {
+  if (!response.ok) {
     const text = await response.text();
+
+    // Some CompreFace versions return duplicate-subject as 400 with code 43.
+    const duplicateByStatus = response.status === 409;
+    const duplicateByBody =
+      response.status === 400 &&
+      (text.includes('"code" : 43') ||
+        text.includes('"code":43') ||
+        text.toLowerCase().includes("subject already exists"));
+
+    if (duplicateByStatus || duplicateByBody) {
+      return;
+    }
+
     throw new ApiRouteError("INTEGRATION_ERROR", `CompreFace subject error: ${text}`, 502);
   }
 };

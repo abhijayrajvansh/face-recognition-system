@@ -28,6 +28,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -91,6 +92,33 @@ export default function AdminUsersPage() {
     setCreating(false);
   };
 
+  const deleteUser = async (user: UserRow) => {
+    const confirmed = window.confirm(`Delete user ${user.name} (${user.code})? This cannot be undone.`);
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingUserId(user.id);
+    setError(null);
+
+    const response = await fetch(`/api/users/${user.id}`, {
+      method: "DELETE",
+      headers: {
+        "x-dev-email": adminEmail,
+      },
+    });
+
+    const payload = await response.json();
+    if (!payload.ok) {
+      setError(payload.error?.message ?? "Failed to delete user");
+      setDeletingUserId(null);
+      return;
+    }
+
+    await loadUsers(adminEmail);
+    setDeletingUserId(null);
+  };
+
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-8">
       <h1 className="text-2xl font-semibold">Admin Users</h1>
@@ -123,6 +151,7 @@ export default function AdminUsersPage() {
               <th className="p-2">Status</th>
               <th className="p-2">Enrollment</th>
               <th className="p-2">Open</th>
+              <th className="p-2">Delete</th>
             </tr>
           </thead>
           <tbody>
@@ -139,6 +168,16 @@ export default function AdminUsersPage() {
                   <Link className="rounded border px-2 py-1" href={`/admin/users/${user.id}`}>
                     Open
                   </Link>
+                </td>
+                <td className="p-2">
+                  <button
+                    type="button"
+                    className="rounded border border-red-300 px-2 py-1 text-red-700 disabled:opacity-50"
+                    onClick={() => void deleteUser(user)}
+                    disabled={deletingUserId === user.id}
+                  >
+                    {deletingUserId === user.id ? "Deleting..." : "Delete"}
+                  </button>
                 </td>
               </tr>
             ))}

@@ -60,7 +60,12 @@ export async function POST(request: NextRequest) {
 
     const user = await getUserBySubject(best.subject);
     if (!user) {
-      throw new ApiRouteError("NOT_FOUND", "Matched subject is not linked to a user", 404);
+      throw new ApiRouteError(
+        "NOT_FOUND",
+        `Matched subject "${best.subject}" is not linked to a user`,
+        404,
+        { subject: best.subject, similarity: best.similarity },
+      );
     }
 
     if (user.status !== "active") {

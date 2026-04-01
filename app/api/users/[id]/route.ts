@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { handleRouteError, ok, parseOrThrow } from "@/lib/api";
 import { requireAdmin } from "@/lib/auth";
 import { updateUserSchema } from "@/lib/validators";
-import { getUserById, updateUser } from "@/services/users";
+import { deleteUserById, getUserById, updateUser } from "@/services/users";
 
 export const runtime = "nodejs";
 
@@ -26,6 +26,17 @@ export async function PATCH(request: NextRequest, context: { params: Promise<Par
     const payload = parseOrThrow(updateUserSchema, await request.json());
     const user = await updateUser(id, payload);
     return ok({ user });
+  } catch (error) {
+    return handleRouteError(error);
+  }
+}
+
+export async function DELETE(request: NextRequest, context: { params: Promise<Params> }) {
+  try {
+    await requireAdmin(request);
+    const { id } = await context.params;
+    await deleteUserById(id);
+    return ok({ deleted: true });
   } catch (error) {
     return handleRouteError(error);
   }

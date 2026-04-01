@@ -63,6 +63,15 @@ export const mockDb = {
     getStore().users.set(id, updated);
     return updated;
   },
+  deleteUser(id: string) {
+    const exists = getStore().users.has(id);
+    if (!exists) {
+      return false;
+    }
+    getStore().users.delete(id);
+    getStore().enrollmentByUser.delete(id);
+    return true;
+  },
   createSession(payload: SessionDoc) {
     const id = makeId();
     const session: MockSession = { id, ...payload };

@@ -7,6 +7,26 @@ import { mockDb } from "@/services/mock-db";
 
 const usersCollection = () => getAdminDb().collection("users");
 
+const isMvpUserDoc = (value: unknown): value is UserDoc => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.name === "string" &&
+    typeof row.code === "string" &&
+    typeof row.department === "string" &&
+    typeof row.status === "string" &&
+    typeof row.comprefaceSubject === "string" &&
+    typeof row.enrollmentStatus === "string" &&
+    typeof row.enrollmentImageCount === "number" &&
+    typeof row.createdAt === "string" &&
+    typeof row.updatedAt === "string" &&
+    typeof row.createdBy === "string"
+  );
+};
+
 export const createUser = async ({
   name,
   code,
@@ -70,7 +90,12 @@ export const listUsers = async () => {
   }
 
   const snapshot = await usersCollection().orderBy("createdAt", "desc").get();
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as UserDoc) }));
+  const rows = snapshot.docs
+    .map((doc) => ({ id: doc.id, raw: doc.data() }))
+    .filter((entry) => isMvpUserDoc(entry.raw))
+    .map((entry) => ({ id: entry.id, ...entry.raw }));
+
+  return rows;
 };
 
 export const getUserById = async (id: string) => {
@@ -83,10 +108,10 @@ export const getUserById = async (id: string) => {
   }
 
   const doc = await usersCollection().doc(id).get();
-  if (!doc.exists) {
+  if (!doc.exists || !isMvpUserDoc(doc.data())) {
     throw new ApiRouteError("NOT_FOUND", "User not found", 404);
   }
-  return { id: doc.id, ...(doc.data() as UserDoc) };
+  return { id: doc.id, ...doc.data() };
 };
 
 export const getUserBySubject = async (subject: string) => {
@@ -102,7 +127,9 @@ export const getUserBySubject = async (subject: string) => {
     const snapshot = await usersCollection().where("comprefaceSubject", "==", key).limit(1).get();
     if (!snapshot.empty) {
       const doc = snapshot.docs[0];
-      return { id: doc.id, ...(doc.data() as UserDoc) };
+      if (isMvpUserDoc(doc.data())) {
+        return { id: doc.id, ...doc.data() };
+      }
     }
   }
 
@@ -166,7 +193,10 @@ export const updateUser = async (
 
   await ref.update(patch);
   const updated = await ref.get();
-  return { id: updated.id, ...(updated.data() as UserDoc) };
+  if (!isMvpUserDoc(updated.data())) {
+    throw new ApiRouteError("NOT_FOUND", "User not found", 404);
+  }
+  return { id: updated.id, ...updated.data() };
 };
 
 export const updateEnrollmentStatus = async (
@@ -192,4 +222,24 @@ export const updateEnrollmentStatus = async (
     enrollmentStatus,
     updatedAt: nowIso(),
   });
+};
+
+export const deleteUserById = async (id: string) => {
+  if (env.useMockDb) {
+    const deleted = mockDb.deleteUser(id);
+    if (!deleted) {
+      throw new ApiRouteError("NOT_FOUND", "User not found", 404);
+    }
+    return;
+  }
+
+  const ref = usersCollection().doc(id);
+  const current = await ref.get();
+  if (!current.exists || !isMvpUserDoc(current.data())) {
+    throw new ApiRouteError("NOT_FOUND", "User not found", 404);
+  }
+
+  const enrollmentSnapshot = await ref.collection("enrollmentImages").get();
+  await Promise.all(enrollmentSnapshot.docs.map((doc) => doc.ref.delete()));
+  await ref.delete();
 };

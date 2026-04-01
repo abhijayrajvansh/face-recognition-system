@@ -125,6 +125,7 @@ export default function AdminSessionsPage() {
         <table className="w-full text-left text-sm">
           <thead className="bg-gray-50">
             <tr>
+              <th className="p-2">Session ID</th>
               <th className="p-2">Title</th>
               <th className="p-2">Date</th>
               <th className="p-2">Time</th>
@@ -135,6 +136,7 @@ export default function AdminSessionsPage() {
           <tbody>
             {sessions.map((session) => (
               <tr key={session.id} className="border-t">
+                <td className="max-w-48 break-all p-2 font-mono text-xs">{session.id}</td>
                 <td className="p-2">{session.title}</td>
                 <td className="p-2">{session.date}</td>
                 <td className="p-2">
