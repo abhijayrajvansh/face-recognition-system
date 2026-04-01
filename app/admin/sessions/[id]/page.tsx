@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const DEV_EMAIL_KEY = "face-mvp-admin-email";
 
@@ -50,39 +53,61 @@ export default function SessionAttendancePage({ params }: PageProps) {
   }, [params]);
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-8">
-      <h1 className="text-2xl font-semibold">Session Attendance</h1>
-      <p className="text-sm">Session: {title || sessionId}</p>
-      <p className="rounded border bg-gray-50 p-3 text-sm">{message}</p>
+    <main className="flex w-full flex-1 flex-col gap-4">
+      <h2 className="text-xl font-semibold md:text-2xl">Session Attendance</h2>
+      <Card>
+        <CardContent className="space-y-3 pt-4">
+          <p className="text-sm">Session: {title || sessionId}</p>
+          <p className="rounded-lg border bg-muted/30 p-3 text-sm">{message}</p>
+          <Button className="w-full md:w-auto" variant="outline" onClick={() => void load(sessionId)}>
+            Refresh
+          </Button>
+        </CardContent>
+      </Card>
 
-      <button className="w-fit rounded border px-3 py-1" onClick={() => void load(sessionId)}>
-        Refresh
-      </button>
-
-      <div className="overflow-auto rounded border">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-2">User</th>
-              <th className="p-2">Code</th>
-              <th className="p-2">Department</th>
-              <th className="p-2">Confidence</th>
-              <th className="p-2">Marked At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} className="border-t">
-                <td className="p-2">{row.userName}</td>
-                <td className="p-2">{row.userCode}</td>
-                <td className="p-2">{row.department}</td>
-                <td className="p-2">{row.confidence.toFixed(3)}</td>
-                <td className="p-2">{new Date(row.markedAt).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="grid gap-3 md:hidden">
+        {rows.map((row) => (
+          <Card key={row.id} size="sm">
+            <CardContent className="space-y-2">
+              <p className="font-semibold">{row.userName}</p>
+              <p className="font-mono text-xs text-muted-foreground">{row.userCode}</p>
+              <p className="text-xs text-muted-foreground">{row.department}</p>
+              <p className="text-xs">Confidence: {row.confidence.toFixed(3)}</p>
+              <p className="text-xs text-muted-foreground">{new Date(row.markedAt).toLocaleString()}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      <Card className="hidden md:block">
+        <CardHeader>
+          <CardTitle>Attendance Rows</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Code</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead>Confidence</TableHead>
+                <TableHead>Marked At</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.userName}</TableCell>
+                  <TableCell className="font-mono text-xs">{row.userCode}</TableCell>
+                  <TableCell>{row.department}</TableCell>
+                  <TableCell>{row.confidence.toFixed(3)}</TableCell>
+                  <TableCell>{new Date(row.markedAt).toLocaleString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </main>
   );
 }

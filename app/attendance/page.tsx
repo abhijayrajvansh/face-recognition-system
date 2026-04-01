@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import CameraCapture from "@/components/CameraCapture";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 type RecognizeResponse = {
   ok: boolean;
@@ -61,19 +64,28 @@ export default function AttendancePage() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-8">
-      <h1 className="text-2xl font-semibold">Attendance</h1>
-      <input
-        className="rounded border px-3 py-2"
-        value={sessionId}
-        onChange={(event) => setSessionId(event.target.value)}
-        placeholder="Session ID"
-      />
-      <CameraCapture onCapture={handleCapture} disabled={submitting} />
-      <p className="rounded border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-900">
-        Detected person: {recognizedPerson || "-"}
-      </p>
-      <p className="rounded border bg-gray-50 p-3 text-sm">{status}</p>
+    <main className="flex w-full flex-1 flex-col gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Attendance</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Input
+            value={sessionId}
+            onChange={(event) => setSessionId(event.target.value)}
+            placeholder="Session ID"
+          />
+          <div className="mx-auto w-full max-w-sm md:max-w-md">
+            <CameraCapture onCapture={handleCapture} disabled={submitting} />
+          </div>
+          <Alert>
+            <AlertDescription>Detected person: {recognizedPerson || "-"}</AlertDescription>
+          </Alert>
+          <Alert variant="default">
+            <AlertDescription>{status}</AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
     </main>
   );
 }

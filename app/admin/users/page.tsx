@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import AdminEmailInput from "@/components/AdminEmailInput";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type UserRow = {
   id: string;
@@ -120,70 +125,108 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-8">
-      <h1 className="text-2xl font-semibold">Admin Users</h1>
+    <main className="flex w-full flex-1 flex-col gap-4">
+      <h2 className="text-xl font-semibold md:text-2xl">Admin Users</h2>
       <AdminEmailInput value={adminEmail} onChange={saveEmail} />
 
-      <form onSubmit={createUser} className="grid gap-2 rounded border p-4 md:grid-cols-4">
-        <input className="rounded border px-2 py-1" value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" required />
-        <input className="rounded border px-2 py-1" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Code (EMP001)" required />
-        <input
-          className="rounded border px-2 py-1"
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-          placeholder="Department"
-          required
-        />
-        <button className="rounded bg-black px-3 py-1 text-white disabled:opacity-50" disabled={creating}>
-          {creating ? "Creating..." : "Create user"}
-        </button>
-      </form>
+      <Card>
+        <CardHeader>
+          <CardTitle>Create User</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={createUser} className="grid gap-2 md:grid-cols-4">
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" required />
+            <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Code (EMP001)" required />
+            <Input value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="Department" required />
+            <Button className="w-full md:w-auto" disabled={creating}>
+              {creating ? "Creating..." : "Create user"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-      <div className="overflow-auto rounded border">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-2">Name</th>
-              <th className="p-2">Code</th>
-              <th className="p-2">Department</th>
-              <th className="p-2">Status</th>
-              <th className="p-2">Enrollment</th>
-              <th className="p-2">Open</th>
-              <th className="p-2">Delete</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id} className="border-t">
-                <td className="p-2">{user.name}</td>
-                <td className="p-2">{user.code}</td>
-                <td className="p-2">{user.department}</td>
-                <td className="p-2">{user.status}</td>
-                <td className="p-2">
+      <div className="grid gap-3 md:hidden">
+        {users.map((user) => (
+          <Card key={user.id} size="sm">
+            <CardContent className="space-y-3">
+              <div className="space-y-1">
+                <p className="text-base font-semibold">{user.name}</p>
+                <p className="font-mono text-xs text-muted-foreground">{user.code}</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant={user.status === "active" ? "default" : "secondary"}>{user.status}</Badge>
+                <Badge variant="outline">
                   {user.enrollmentImageCount} ({user.enrollmentStatus})
-                </td>
-                <td className="p-2">
-                  <Link className="rounded border px-2 py-1" href={`/admin/users/${user.id}`}>
-                    Open
-                  </Link>
-                </td>
-                <td className="p-2">
-                  <button
-                    type="button"
-                    className="rounded border border-red-300 px-2 py-1 text-red-700 disabled:opacity-50"
-                    onClick={() => void deleteUser(user)}
-                    disabled={deletingUserId === user.id}
-                  >
-                    {deletingUserId === user.id ? "Deleting..." : "Delete"}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">{user.department}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="outline" asChild>
+                  <Link href={`/admin/users/${user.id}`}>Open</Link>
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => void deleteUser(user)}
+                  disabled={deletingUserId === user.id}
+                >
+                  {deletingUserId === user.id ? "Deleting..." : "Delete"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      <Card className="hidden md:block">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Code</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Enrollment</TableHead>
+                <TableHead>Open</TableHead>
+                <TableHead>Delete</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell className="font-mono text-xs">{user.code}</TableCell>
+                  <TableCell>{user.department}</TableCell>
+                  <TableCell>
+                    <Badge variant={user.status === "active" ? "default" : "secondary"}>{user.status}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {user.enrollmentImageCount} ({user.enrollmentStatus})
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="outline" asChild>
+                      <Link href={`/admin/users/${user.id}`}>Open</Link>
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => void deleteUser(user)}
+                      disabled={deletingUserId === user.id}
+                    >
+                      {deletingUserId === user.id ? "Deleting..." : "Delete"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </main>
   );
 }

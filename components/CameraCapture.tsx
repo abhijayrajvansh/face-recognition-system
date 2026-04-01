@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   onCapture: (file: File) => void;
@@ -67,14 +68,14 @@ export default function CameraCapture({ onCapture, disabled }: Props) {
   return (
     <div className="space-y-3">
       <video ref={videoRef} className="w-full rounded-xl border border-slate-300 bg-black object-cover" muted playsInline />
-      <button
+      <Button
         type="button"
         onClick={capture}
         disabled={disabled}
-        className="btn-primary w-full disabled:opacity-50 md:w-auto"
+        className="w-full md:w-auto"
       >
         Capture & Submit
-      </button>
+      </Button>
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
     </div>
   );

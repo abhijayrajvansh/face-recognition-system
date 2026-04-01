@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import AdminEmailInput from "@/components/AdminEmailInput";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const DEV_EMAIL_KEY = "face-mvp-admin-email";
 
@@ -106,61 +111,103 @@ export default function AdminSessionsPage() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-8">
-      <h1 className="text-2xl font-semibold">Admin Sessions</h1>
+    <main className="flex w-full flex-1 flex-col gap-4">
+      <h2 className="text-xl font-semibold md:text-2xl">Admin Sessions</h2>
       <AdminEmailInput value={adminEmail} onChange={saveEmail} />
 
-      <form onSubmit={create} className="grid gap-2 rounded border p-4 md:grid-cols-3">
-        <input className="rounded border px-2 py-1" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" required />
-        <input className="rounded border px-2 py-1" value={date} onChange={(e) => setDate(e.target.value)} type="date" required />
-        <input className="rounded border px-2 py-1" value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="Department (optional)" />
-        <input className="rounded border px-2 py-1" value={startTime} onChange={(e) => setStartTime(e.target.value)} type="time" required />
-        <input className="rounded border px-2 py-1" value={endTime} onChange={(e) => setEndTime(e.target.value)} type="time" required />
-        <button className="rounded bg-black px-3 py-1 text-white">Create session</button>
-      </form>
+      <Card>
+        <CardHeader>
+          <CardTitle>Create Session</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={create} className="grid gap-2 md:grid-cols-3">
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" required />
+            <Input value={date} onChange={(e) => setDate(e.target.value)} type="date" required />
+            <Input value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="Department (optional)" />
+            <Input value={startTime} onChange={(e) => setStartTime(e.target.value)} type="time" required />
+            <Input value={endTime} onChange={(e) => setEndTime(e.target.value)} type="time" required />
+            <Button className="w-full md:w-auto">Create session</Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-      <div className="overflow-auto rounded border">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-2">Session ID</th>
-              <th className="p-2">Title</th>
-              <th className="p-2">Date</th>
-              <th className="p-2">Time</th>
-              <th className="p-2">Status</th>
-              <th className="p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sessions.map((session) => (
-              <tr key={session.id} className="border-t">
-                <td className="max-w-48 break-all p-2 font-mono text-xs">{session.id}</td>
-                <td className="p-2">{session.title}</td>
-                <td className="p-2">{session.date}</td>
-                <td className="p-2">
+      <div className="grid gap-3 md:hidden">
+        {sessions.map((session) => (
+          <Card key={session.id} size="sm">
+            <CardContent className="space-y-3">
+              <div className="space-y-1">
+                <p className="text-base font-semibold">{session.title}</p>
+                <p className="font-mono text-xs text-muted-foreground break-all">{session.id}</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant={session.status === "active" ? "default" : "secondary"}>{session.status}</Badge>
+                <Badge variant="outline">
                   {session.startTime} - {session.endTime}
-                </td>
-                <td className="p-2">{session.status}</td>
-                <td className="p-2">
-                  <div className="flex flex-wrap gap-2">
-                    <button className="rounded border px-2 py-1" onClick={() => setStatus(session.id, "active")}>
-                      Activate
-                    </button>
-                    <button className="rounded border px-2 py-1" onClick={() => setStatus(session.id, "closed")}>
-                      Close
-                    </button>
-                    <Link className="rounded border px-2 py-1" href={`/admin/sessions/${session.id}`}>
-                      View
-                    </Link>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">{session.date}</p>
+              <div className="grid grid-cols-3 gap-2">
+                <Button type="button" variant="outline" onClick={() => void setStatus(session.id, "active")}>
+                  Activate
+                </Button>
+                <Button type="button" variant="outline" onClick={() => void setStatus(session.id, "closed")}>
+                  Close
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href={`/admin/sessions/${session.id}`}>View</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      <Card className="hidden md:block">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Session ID</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.map((session) => (
+                <TableRow key={session.id}>
+                  <TableCell className="max-w-48 break-all font-mono text-xs">{session.id}</TableCell>
+                  <TableCell>{session.title}</TableCell>
+                  <TableCell>{session.date}</TableCell>
+                  <TableCell>
+                    {session.startTime} - {session.endTime}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={session.status === "active" ? "default" : "secondary"}>{session.status}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" variant="outline" onClick={() => void setStatus(session.id, "active")}>
+                        Activate
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => void setStatus(session.id, "closed")}>
+                        Close
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link href={`/admin/sessions/${session.id}`}>View</Link>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </main>
   );
 }

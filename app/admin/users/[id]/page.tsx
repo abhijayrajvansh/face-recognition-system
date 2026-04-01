@@ -1,6 +1,10 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 const DEV_EMAIL_KEY = "face-mvp-admin-email";
 
@@ -115,34 +119,48 @@ export default function UserDetailPage({ params }: PageProps) {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-8">
-      <h1 className="text-2xl font-semibold">User Detail</h1>
+    <main className="flex w-full flex-1 flex-col gap-4">
+      <h2 className="text-xl font-semibold md:text-2xl">User Detail</h2>
       {!user ? <p>Loading...</p> : null}
 
       {user ? (
-        <div className="space-y-3 rounded border p-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {user.name} <span className="font-mono text-sm text-muted-foreground">({user.code})</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
           <p>
-            <strong>{user.name}</strong> ({user.code})
+            Department: <strong>{user.department}</strong>
           </p>
-          <p>Department: {user.department}</p>
-          <p>Status: {user.status}</p>
-          <p>Subject: {user.comprefaceSubject}</p>
+          <p>
+            Status: <Badge variant={user.status === "active" ? "default" : "secondary"}>{user.status}</Badge>
+          </p>
+          <p className="font-mono text-xs">Subject: {user.comprefaceSubject}</p>
           <p>
             Enrollment: {user.enrollmentImageCount} images ({user.enrollmentStatus})
           </p>
-          <button className="rounded bg-black px-3 py-1 text-white" onClick={toggleStatus}>
+          <Button type="button" onClick={toggleStatus}>
             Toggle status
-          </button>
-        </div>
+          </Button>
+          </CardContent>
+        </Card>
       ) : null}
 
-      <form onSubmit={onEnroll} className="space-y-2 rounded border p-4">
-        <h2 className="font-medium">Upload enrollment images (1-5)</h2>
-        <input name="images" type="file" multiple accept="image/*" required />
-        <button className="rounded bg-black px-3 py-1 text-white disabled:opacity-50" disabled={uploading}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Upload Enrollment Images (1-5)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={onEnroll} className="space-y-3">
+            <Input name="images" type="file" multiple accept="image/*" required />
+            <Button className="w-full md:w-auto" disabled={uploading}>
           {uploading ? "Uploading..." : "Upload and enroll"}
-        </button>
-      </form>
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {message ? <p className="text-sm">{message}</p> : null}
     </main>

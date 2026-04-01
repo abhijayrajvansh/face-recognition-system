@@ -6,6 +6,7 @@ import { env } from "@/lib/env";
 import { mockDb } from "@/services/mock-db";
 
 const usersCollection = () => getAdminDb().collection("users");
+type AppUser = { id: string } & UserDoc;
 
 const isMvpUserDoc = (value: unknown): value is UserDoc => {
   if (!value || typeof value !== "object") {
@@ -90,10 +91,10 @@ export const listUsers = async () => {
   }
 
   const snapshot = await usersCollection().orderBy("createdAt", "desc").get();
-  const rows = snapshot.docs
+  const rows: AppUser[] = snapshot.docs
     .map((doc) => ({ id: doc.id, raw: doc.data() }))
     .filter((entry) => isMvpUserDoc(entry.raw))
-    .map((entry) => ({ id: entry.id, ...entry.raw }));
+    .map((entry) => ({ id: entry.id, ...(entry.raw as UserDoc) }));
 
   return rows;
 };
@@ -111,7 +112,7 @@ export const getUserById = async (id: string) => {
   if (!doc.exists || !isMvpUserDoc(doc.data())) {
     throw new ApiRouteError("NOT_FOUND", "User not found", 404);
   }
-  return { id: doc.id, ...doc.data() };
+  return { id: doc.id, ...(doc.data() as UserDoc) };
 };
 
 export const getUserBySubject = async (subject: string) => {
@@ -128,7 +129,7 @@ export const getUserBySubject = async (subject: string) => {
     if (!snapshot.empty) {
       const doc = snapshot.docs[0];
       if (isMvpUserDoc(doc.data())) {
-        return { id: doc.id, ...doc.data() };
+        return { id: doc.id, ...(doc.data() as UserDoc) };
       }
     }
   }
@@ -196,7 +197,7 @@ export const updateUser = async (
   if (!isMvpUserDoc(updated.data())) {
     throw new ApiRouteError("NOT_FOUND", "User not found", 404);
   }
-  return { id: updated.id, ...updated.data() };
+  return { id: updated.id, ...(updated.data() as UserDoc) };
 };
 
 export const updateEnrollmentStatus = async (

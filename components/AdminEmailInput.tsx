@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 type Props = {
   value: string;
@@ -15,26 +18,22 @@ export default function AdminEmailInput({ value, onChange }: Props) {
   }, [value]);
 
   return (
-    <div className="panel p-3 md:p-4">
+    <Card className="p-3 md:p-4">
       <label htmlFor="admin-email" className="field-label block">
         Dev admin email
       </label>
       <div className="flex flex-col gap-2 md:flex-row">
-        <input
+        <Input
           id="admin-email"
           className="md:flex-1"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           placeholder="admin@example.com"
         />
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => onChange(draft.trim().toLowerCase())}
-        >
+        <Button type="button" onClick={() => onChange(draft.trim().toLowerCase())}>
           Save
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }
