@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Face Recognition Attendance MVP
 
-## Getting Started
+Working prototype for attendance with:
+- Next.js App Router + Route Handlers
+- Firebase Auth + Firestore + Storage
+- CompreFace integration (with mock mode)
 
-First, run the development server:
+## Implemented MVP Scope
+- Admin user CRUD
+- Enrollment upload (1-5 images per request, complete at >=3 images)
+- Session create/list/update (draft/active/closed)
+- Attendance recognition endpoint with duplicate prevention
+- Attendance webcam page (`/attendance`)
+- Admin screens:
+  - `/admin/users`
+  - `/admin/users/[id]`
+  - `/admin/sessions`
+  - `/admin/sessions/[id]`
 
+## Local Setup
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Copy env file and fill values:
+```bash
+cp .env.example .env.local
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. For quick UI development, keep mock mode:
+```bash
+USE_MOCK_FACE_ENGINE=true
+USE_MOCK_DB=true
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Run app:
+```bash
+pnpm dev
+```
 
-## Learn More
+Open `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+## Admin Access in Development
+Admin routes require auth. For development, this MVP supports `x-dev-email` header.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+UI pages include a “Dev admin email” input. Use an email present in `ADMIN_EMAILS`.
+Default example: `admin@example.com`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## CompreFace Notes
+Set:
+- `COMPREFACE_BASE_URL`
+- `COMPREFACE_API_KEY`
+- `COMPREFACE_RECOGNITION_SERVICE_ID`
 
-## Deploy on Vercel
+Current service wrapper paths:
+- `POST /subjects`
+- `POST /faces`
+- `POST /recognize`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+under:
+- `${COMPREFACE_BASE_URL}/api/v1/recognition/${COMPREFACE_RECOGNITION_SERVICE_ID}`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Firestore Data Shape
+- `users/{userId}`
+- `users/{userId}/enrollmentImages/{imageId}`
+- `sessions/{sessionId}`
+- `sessions/{sessionId}/attendance/{userId}`
+
+Duplicate prevention is enforced by using `userId` as attendance document ID inside a session.
+
+## API Endpoints
+- `GET/POST /api/users`
+- `GET/PATCH /api/users/[id]`
+- `POST /api/users/[id]/enroll`
+- `GET/POST /api/sessions`
+- `GET/PATCH /api/sessions/[id]`
+- `GET /api/sessions/[id]/attendance`
+- `POST /api/attendance/recognize`
+- `GET /api/reports/session/[id]`
+- `GET /api/auth/me`
+
+## Security Files
+- `firestore.rules`
+- `storage.rules`
+
+These are starter drafts and should be tightened with your real admin emails/claims before production.
