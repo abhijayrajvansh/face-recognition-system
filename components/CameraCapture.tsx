@@ -53,6 +53,9 @@ export default function CameraCapture({ onCapture, disabled }: Props) {
       return;
     }
 
+    // Counter browser/front-camera mirrored feeds so saved frames match real orientation.
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.95));
 
@@ -67,7 +70,12 @@ export default function CameraCapture({ onCapture, disabled }: Props) {
 
   return (
     <div className="space-y-3">
-      <video ref={videoRef} className="w-full rounded-xl border border-slate-300 bg-black object-cover" muted playsInline />
+      <video
+        ref={videoRef}
+        className="w-full -scale-x-100 rounded-xl border border-slate-300 bg-black object-cover"
+        muted
+        playsInline
+      />
       <Button
         type="button"
         onClick={capture}
